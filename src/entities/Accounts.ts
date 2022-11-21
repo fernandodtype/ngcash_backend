@@ -7,10 +7,10 @@ export class Account{
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({type: "float"})
+    @Column({type: "float", nullable: false, default: 100.00})
     balance: number
 
-    @OneToOne(() => User, user => user.id)
+    @OneToOne(() => User, user => user.accountId)
     user: User
 
     @OneToMany(() => Transaction, transaction => transaction.id)

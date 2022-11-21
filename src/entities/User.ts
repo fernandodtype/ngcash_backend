@@ -13,7 +13,7 @@ export class User{
     @Column({type: "text"})
     password: string
 
-    @OneToOne(() => Account, account => account.id)
+    @OneToOne(() => Account, account => account.user)
     @JoinColumn({name: "account_id"})
     accountId: Account
 

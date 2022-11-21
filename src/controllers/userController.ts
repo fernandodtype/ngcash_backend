@@ -1,11 +1,18 @@
 import { Request, Response } from "express";
+import accountRepository from "../repositories/accountRepository";
+import { userRepository } from "../repositories/userRepository";
+
 
 export class UserController{
     static async balance(req: Request, res: Response){
-      
+
+        const user_id = Number(req.token)
+
+        const user = await userRepository.findOne({relations: {accountId: true}, where: {id: user_id}})
+        const balance = user?.accountId.balance
         
         
-        return res.status(201).json({saldo: `R$:100,00`})
+        return res.status(201).json({balance})
 
     }
 }
