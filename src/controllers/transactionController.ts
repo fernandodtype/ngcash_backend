@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
+import { Transaction } from "../entities/Transactions";
 import accountRepository from "../repositories/accountRepository";
+import { transactionRepository } from "../repositories/transactionRepository";
 import { userRepository } from "../repositories/userRepository";
 
 export class TransactionController{
@@ -35,8 +37,28 @@ export class TransactionController{
                 balance_to_credit.balance = new_balance_credit
                 await accountRepository.save(balance_to_credit)
             }
+
+            if (balance_to_credit && balance_to_debit){
+
+                let transaction = new Transaction()
+                transaction.value = cashOut
+                transaction.createdAt = new Date()
+                transaction.creditedAccountId = balance_to_credit
+                transaction.debitedAccountId = balance_to_debit
+                await transactionRepository.manager.save(transaction)
+
+                balance_to_credit.transactions = [transaction]
+                balance_to_debit.transactions = [transaction]
+
+                accountRepository.manager.save(balance_to_credit)
+                accountRepository.manager.save(balance_to_debit)
+
+            }
+
             
         } catch  {
+
+            return res.status(500).json({erro: "Houve um erro interno na transação"})
             
         }
 
