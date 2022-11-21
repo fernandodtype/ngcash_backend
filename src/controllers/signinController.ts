@@ -25,7 +25,7 @@ export class SinginController{
             username: user_exist[0].username
         }, "s3nh4C0MPR1D4", {expiresIn: "24h"})
 
-        return res.status(200).json({"data": "Acessadi", token})
+        return res.status(200).json({"data": "Acessado com sucesso", token})
 
     }
 }
