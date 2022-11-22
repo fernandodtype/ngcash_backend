@@ -91,7 +91,7 @@ export class TransactionController{
                 
                 transactions = await transactionRepository
                 .createQueryBuilder("transactions").orderBy("transactions.id", "DESC")
-                .leftJoinAndSelect("transactions.debitedAccountId", "accounts")
+                .leftJoinAndSelect("transactions.debitedAccountId", "debit_accounts")
                 .leftJoinAndSelect("transactions.creditedAccountId", "credit_account")
                 .where("transactions.debitedAccountId.id = :id", {id: accountId}).getMany()
        
@@ -100,7 +100,7 @@ export class TransactionController{
             case "cash-in":
                 transactions = await transactionRepository
                 .createQueryBuilder("transactions").orderBy("transactions.id", "DESC")
-                .leftJoinAndSelect("transactions.debitedAccountId", "accounts")
+                .leftJoinAndSelect("transactions.debitedAccountId", "debit_accounts")
                 .leftJoinAndSelect("transactions.creditedAccountId", "credit_account")
                 .where("transactions.creditedAccountId.id = :id", {id: accountId}).getMany()
 
@@ -111,6 +111,7 @@ export class TransactionController{
                 .createQueryBuilder("transactions").orderBy("transactions.id", "DESC")
                 .leftJoinAndSelect("transactions.debitedAccountId", "debit_account")
                 .leftJoinAndSelect("transactions.creditedAccountId", "credit_account")
+                .leftJoinAndSelect("credit_account.user", "credit_account_user")
                 .where("transactions.debitedAccountId.id = :id OR transactions.creditedAccountId.id = :id", {id: accountId}).getMany()
 
        

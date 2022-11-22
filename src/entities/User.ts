@@ -10,7 +10,7 @@ export class User{
     @Column({unique: true, type: "text", nullable: false})
     username: string
 
-    @Column({type: "text"})
+    @Column({type: "text", select: false})
     password: string
 
     @OneToOne(() => Account, account => account.user)
