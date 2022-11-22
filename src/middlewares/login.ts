@@ -2,10 +2,6 @@ import { NextFunction, Request, Response } from "express"
 import {JwtPayload} from 'jsonwebtoken';
 const jwt = require('jsonwebtoken')
 
-// export interface CustomRequest extends Request {
-//     token: string | JwtPayload
-// }
-
 interface TokenPayload{
     id: string;
     username: string;

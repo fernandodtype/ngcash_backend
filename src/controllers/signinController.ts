@@ -23,7 +23,7 @@ export class SinginController{
         const token = jwt.sign({
             id: user_exist[0].id,
             username: user_exist[0].username
-        }, "s3nh4C0MPR1D4", {expiresIn: "24h"})
+        }, "s3nh4C0MPR1D4", {expiresIn: "1d"})
 
         return res.status(200).json({"data": "Acessado com sucesso", token})
 

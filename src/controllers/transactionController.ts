@@ -3,6 +3,7 @@ import { Transaction } from "../entities/Transactions";
 import accountRepository from "../repositories/accountRepository";
 import { transactionRepository } from "../repositories/transactionRepository";
 import { userRepository } from "../repositories/userRepository";
+import { Equal } from "typeorm";
 
 export class TransactionController{
     static async create(req: Request, res:Response){
@@ -11,6 +12,8 @@ export class TransactionController{
        
        const user_id = Number(req.token)
        const user_debited = await userRepository.findOne({relations: {accountId: true}, where: {id: user_id}})
+
+       
        const balance_to_debit = user_debited?.accountId
        
        if (username === user_debited?.username) {
@@ -22,6 +25,9 @@ export class TransactionController{
        }
         
         const user_credited = await userRepository.findOne({relations: {accountId: true}, where: {username: username}})
+        if (!user_credited) {
+            return res.status(404).json({erro: "Não foi possível realizar esta transação"})
+           }
         const balance_to_credit = user_credited?.accountId
 
         try {
@@ -65,5 +71,65 @@ export class TransactionController{
                
 
        return res.status(200).json({"data": "Movimentação realizada com sucesso"})
+    }
+
+    static async myTransactions(req: Request, res: Response){
+        const {date, typeTransaction} = req.body
+
+        const user = await userRepository.findOne({relations: {
+            accountId: true
+        }, where: {
+            id: Number(req.token)
+        }})
+
+        const accountId = user?.accountId.id
+        
+        let transactions 
+
+        switch (typeTransaction) {
+            case "cash-out":
+                
+                transactions = await transactionRepository
+                .createQueryBuilder("transactions").orderBy("transactions.id", "DESC")
+                .leftJoinAndSelect("transactions.debitedAccountId", "accounts")
+                .leftJoinAndSelect("transactions.creditedAccountId", "credit_account")
+                .where("transactions.debitedAccountId.id = :id", {id: accountId}).getMany()
+       
+                break
+            
+            case "cash-in":
+                transactions = await transactionRepository
+                .createQueryBuilder("transactions").orderBy("transactions.id", "DESC")
+                .leftJoinAndSelect("transactions.debitedAccountId", "accounts")
+                .leftJoinAndSelect("transactions.creditedAccountId", "credit_account")
+                .where("transactions.creditedAccountId.id = :id", {id: accountId}).getMany()
+
+                break
+        
+            default:
+                transactions = await transactionRepository
+                .createQueryBuilder("transactions").orderBy("transactions.id", "DESC")
+                .leftJoinAndSelect("transactions.debitedAccountId", "debit_account")
+                .leftJoinAndSelect("transactions.creditedAccountId", "credit_account")
+                .where("transactions.debitedAccountId.id = :id OR transactions.creditedAccountId.id = :id", {id: accountId}).getMany()
+
+       
+                break;
+        }
+
+        let n_transactions
+        
+        if (date){
+            n_transactions = transactions.filter((el) => { 
+                   
+                    if (date === el.createdAt.toLocaleDateString()){
+                        return el
+                    }
+                })
+        } else {
+            n_transactions = transactions
+        }
+
+        return res.status(200).json({"data": n_transactions})
     }
 }
