@@ -3,7 +3,6 @@ import { Transaction } from "../entities/Transactions";
 import accountRepository from "../repositories/accountRepository";
 import { transactionRepository } from "../repositories/transactionRepository";
 import { userRepository } from "../repositories/userRepository";
-import { Equal } from "typeorm";
 
 export class TransactionController{
     static async create(req: Request, res:Response){
@@ -17,16 +16,25 @@ export class TransactionController{
        const balance_to_debit = user_debited?.accountId
        
        if (username === user_debited?.username) {
-           return res.status(200).json({erro: "Não é possível realizar movimentação para a mesma conta"})
-        }
+           return res.status(200).json({
+               success: false,
+               msg: "Não é possível realizar movimentação para a mesma conta"
+           })
+       }
 
         if (!balance_to_debit || balance_to_debit.balance <= cashOut){
-            res.status(400).json({erro: "Não foi possível realizar a transação"})
+            res.status(400).json({
+                success: false,
+                msg: "Não foi possível realizar a transação, por saldo insuficiente"
+            })
        }
         
-        const user_credited = await userRepository.findOne({relations: {accountId: true}, where: {username: username}})
+        const user_credited = await userRepository.findOne({
+            relations: {accountId: true},
+            where: {username: username}
+        })
         if (!user_credited) {
-            return res.status(404).json({erro: "Não foi possível realizar esta transação"})
+            return res.status(404).json({success: false, msg: "Não foi possível realizar a transação"})
            }
         const balance_to_credit = user_credited?.accountId
 
@@ -53,24 +61,15 @@ export class TransactionController{
                 transaction.debitedAccountId = balance_to_debit
                 await transactionRepository.manager.save(transaction)
 
-                balance_to_credit.transactions = [transaction]
-                balance_to_debit.transactions = [transaction]
-
-                accountRepository.manager.save(balance_to_credit)
-                accountRepository.manager.save(balance_to_debit)
-
             }
-
             
-        } catch  {
-
-            return res.status(500).json({erro: "Houve um erro interno na transação"})
+        } catch (error) {
+            console.error(error)
+            return res.status(500).json({success: false, msg: "Houve um erro interno na transação"})
             
         }
 
-               
-
-       return res.status(200).json({"data": "Movimentação realizada com sucesso"})
+       return res.status(200).json({success: true, msg: "Movimentação realizada com sucesso"})
     }
 
     static async myTransactions(req: Request, res: Response){
@@ -131,6 +130,6 @@ export class TransactionController{
             n_transactions = transactions
         }
 
-        return res.status(200).json({"data": n_transactions})
+        return res.status(200).json({success: true, "data": n_transactions})
     }
 }

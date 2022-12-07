@@ -3,3 +3,4 @@ node_modules/
 src/entities/Video.ts
 src/entities/Room.ts
 .vscode/
+.idea

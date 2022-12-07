@@ -9,10 +9,8 @@ export class UserController{
         const user_id = Number(req.token)
 
         const user = await userRepository.findOne({relations: {accountId: true}, where: {id: user_id}})
-        const balance = user?.accountId.balance
         
-        
-        return res.status(201).json({balance})
+        return res.status(201).json({success: true, user})
 
     }
 }
