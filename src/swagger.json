@@ -1,0 +1,397 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Backend API",
+    "description": "NG_CASH-BACKEND",
+    "contact": {
+      "email": "fernandoluisantos@gmail.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://virtserver.swaggerhub.com/fernando55/ngcash/1.0.0",
+      "description": "SwaggerHub API Auto Mocking"
+    }
+  ],
+  "tags": [
+    {
+      "name": "cadastro",
+      "description": "Cadastro de usuário para a plataforma"
+    },
+    {
+      "name": "login",
+      "description": "Endpoint para fazer login da aplicação retornando token de validação"
+    },
+    {
+      "name": "saldo",
+      "description": "Saldo do usuário logado"
+    },
+    {
+      "name": "transação",
+      "description": "Criação de transação"
+    },
+    {
+      "name": "transações",
+      "description": "Todas as transações do usuário logado"
+    }
+  ],
+  "paths": {
+    "/singup": {
+      "post": {
+        "tags": [
+          "cadastro"
+        ],
+        "summary": "Cadastra o usuário",
+        "description": "Cadastra o usuário com um username e senha, o usuário deve ter no mínimo 3 caracteres e senha deve conter uma letra maiúscula e um número com no mínimo 8 caracteres.\n",
+        "operationId": "signUser",
+        "requestBody": {
+          "description": "Cadastra um usuário",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCadastro"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário cadastrado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SingupMsg"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Username ou password não obedecendo os critérios obrigatórios."
+          },
+          "500": {
+            "description": "Erro interno na criação do usuário."
+          }
+        }
+      }
+    },
+    "/signin": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Rota para login do usuário",
+        "description": "Rota para usuário fazer login com seu username e senha e receber token de validação para outras rotas\n",
+        "operationId": "login",
+        "responses": {
+          "200": {
+            "description": "Usuário logado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioLogado"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro ao fazer login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ErroLogin"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/balance": {
+      "get": {
+        "tags": [
+          "saldo"
+        ],
+        "summary": "Retorna o saldo disponível do usuário logado",
+        "description": "Retorna o valor do saldo do usuário logado\n",
+        "operationId": "balance",
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "description": "Token recebido quando feito o login na aplicação",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário com login e token válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Balance"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/transaction/create": {
+      "post": {
+        "tags": [
+          "transação"
+        ],
+        "summary": "Cria uma transação",
+        "description": "Cria uma transação caso o valor a ser debitado seja maior do que o valor disponível, informando o nome do usuário a receber e o valor a ser movimentado\n",
+        "operationId": "transaction",
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "description": "Token recebido quando feito o login na aplicação",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriaMovimentacao"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Movimentação realizada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CriadoMovimentacao"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro para realizar a movimentação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroMovimentacao"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao tentar realizar a movimentação"
+          }
+        }
+      }
+    },
+    "/user/transactions": {
+      "post": {
+        "tags": [
+          "transações"
+        ],
+        "summary": "Filtra e lista as transações do usuário",
+        "description": "Lista todas as movimentações daquele usuário, podendo filtrar por data e/ou tipo de movimentação (entrada ou saída)\n",
+        "operationId": "transactions",
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "description": "Token recebido quando feito o login na aplicação",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Filtro"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista todas as movimentações"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserCadastro": {
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "Fernando"
+          },
+          "password": {
+            "type": "string",
+            "example": "SenhaC0m1234"
+          }
+        }
+      },
+      "SingupMsg": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "msg": {
+            "type": "string",
+            "example": "OK"
+          }
+        }
+      },
+      "UsuarioLogado": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "msg": {
+            "type": "string",
+            "example": "Acessado com sucesso"
+          },
+          "token": {
+            "$ref": "#/components/schemas/UsuarioLogado_token"
+          }
+        }
+      },
+      "ErroLogin": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "msg": {
+            "type": "string",
+            "example": "Erro para validação de usuário e/ou senha"
+          }
+        }
+      },
+      "Balance": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/Balance_user"
+          }
+        }
+      },
+      "CriadoMovimentacao": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "msg": {
+            "type": "string",
+            "example": "Movimentação realizada com sucesso"
+          }
+        }
+      },
+      "ErroMovimentacao": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "msg": {
+            "type": "string",
+            "example": "Não é possível realizar a transação"
+          }
+        }
+      },
+      "CriaMovimentacao": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "Nome do usuário"
+          },
+          "value": {
+            "type": "number",
+            "example": 10
+          }
+        }
+      },
+      "Filtro": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "25/11/2022"
+          },
+          "typeTransaction": {
+            "type": "string",
+            "example": "cash-out"
+          }
+        }
+      },
+      "UsuarioLogado_token": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsInVzZXJuYW1lIjoibm9tZV9uaWNrIiwiaWF0IjoxNjcwNDMyMzk5LCJleHAiOjE2NzA1MTg3OTl9.vk6MeamwIBMFw0LraSSNrp9kiQhDQ50E02TtT7B5b4Y"
+          }
+        }
+      },
+      "Balance_user": {
+        "type": "object",
+        "properties": {
+          "balance": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
