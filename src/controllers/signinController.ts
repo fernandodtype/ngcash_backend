@@ -12,7 +12,7 @@ export class SinginController{
         const user_exist = await userRepository.find({relations : {accountId: true}, where: {username: username}, select: ["id", "username" ,'password', "accountId"] })
 
         if (user_exist.length <= 0) {
-            res.status(404).json({success: false, msg: "Erro para validação de usuário e/ou senha"})
+            return res.status(404).json({success: false, msg: "Erro para validação de usuário e/ou senha"})
         }
 
         // Verificar se a senha está correta

@@ -12,5 +12,7 @@ ApppDataSource.initialize().then(() => {
     
     app.use(routes)
 
-    return app.listen(3000)
+    return app.listen(3000, () => {
+        console.log('Funcionando')
+    })
 })

@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  api:
+    image: node:18-alpine
+    build:
+      context: .
+      target: development
+    restart: always
+    volumes:
+      - ./:/build
+      - /build/node_modules
+    ports:
+      - 3000:3000
+    command: npm run dev
+    depends_on:
+      - db
+    links:
+      - db
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: d4rthf3r
+      POSTGRES_DB: ngc
+    ports:
+      - 5436:5436
+    volumes:
+      - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:
